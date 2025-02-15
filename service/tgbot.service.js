@@ -1,49 +1,51 @@
-const { Telegraf } = require("telegraf")
+const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
+const {getTgLink} = require('../utils/utils')
 require('dotenv').config()
 
 
 class TgbotService {
-    bot=""
+    bot= null
     async tgbotInit () {
-        this.bot = new Telegraf(process.env.TG_TOKEN);
+        const isTgTestEnvironment = JSON.parse(process.env.USE_TG_TEST_ENV)
+        this.bot = new TelegramBot(process.env.TG_TOKEN, { polling: false, testEnvironment: isTgTestEnvironment });
 
-        this.bot.on('successful_payment', async ctx => {
-            ctx.reply('Вы получили Pro версию')
-            const userID = ctx.update.message.from.id
-            const paymentChargeID = ctx.update.message?.successful_payment.telegram_payment_charge_id
-            console.log('successful_payment: ', ctx.update.message?.successful_payment)
-            console.log('payment_charge_id: ', paymentChargeID)
-            try {
-                const isRefunded = await this.refundStarPayment(userID, paymentChargeID)
-                console.log('is_refunded: ', isRefunded)
-            }
-            catch(err) {
-                console.error("Can't refund on successful_payment: ", err)
-            }
-        })
+        this.bot.on('successful_payment', async (msg) => {
+            const chatId = msg.chat.id;
+            this.bot.sendMessage(chatId, 'Вы получили Pro версию');
+            const userID = msg.from.id;
+            const paymentChargeID = msg.successful_payment.telegram_payment_charge_id;
+            console.log('successful_payment: ', msg.successful_payment);
+            console.log('payment_charge_id: ', paymentChargeID);
+           /* try {
+                const isRefunded = await this.refundStarPayment(userID, paymentChargeID);
+                console.log('is_refunded: ', isRefunded);
+            } catch (err) {
+                console.error("Can't refund on successful_payment: ", err);
+            }*/
+        });
 
-        this.bot.launch()
         console.log('bot Launched')
     }
 
     async buySubscription() {
-        let titleText = "Some Title" 
-        let descriptionText = "Some Description" 
-        let payload = {}
-        let providerToken = "" 
-        let currency = "XTR"
-        let prices = [{label:"Price Label", amount:1}]
-        let obj = {title:titleText, description:descriptionText, payload:payload, provider_token:providerToken, currency:currency, prices:prices }
-        let result = await this.bot.telegram.createInvoiceLink(obj)
-        return result
+        const title = "Some Title";
+        const description = "Some Description";
+        const payload = '123';
+        const provider_token = "";
+        const currency = "XTR";
+        const prices = [{ label: "Price Label", amount: 1 }];
+
+        const result = await this.bot.createInvoiceLink(title, description, payload, provider_token, currency, prices);
+        return result;
     }
 
     // Метод для вызова refundStarPayment
     async refundStarPayment(userId, telegramPaymentChargeId) {
+        const url = getTgLink('refundStarPayment')
         try {
             const response = await axios.post(
-                `https://api.telegram.org/bot${process.env.TG_TOKEN}/refundStarPayment`,
+                url,
                 {
                     user_id: userId,
                     telegram_payment_charge_id: telegramPaymentChargeId,
