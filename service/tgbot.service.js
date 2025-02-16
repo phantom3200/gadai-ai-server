@@ -8,7 +8,7 @@ class TgbotService {
     bot= null
     async tgbotInit () {
         const isTgTestEnvironment = JSON.parse(process.env.USE_TG_TEST_ENV)
-        this.bot = new TelegramBot(process.env.TG_TOKEN, { polling: false, testEnvironment: isTgTestEnvironment });
+        this.bot = new TelegramBot(process.env.TG_TOKEN, { polling: true, testEnvironment: isTgTestEnvironment });
 
         this.bot.on('successful_payment', async (msg) => {
             const chatId = msg.chat.id;
@@ -26,7 +26,10 @@ class TgbotService {
         });
 
         this.bot.on("pre_checkout_query", (query) => {
-            this.bot.answerPreCheckoutQuery(query.id, true).catch(() => {
+            console.log('preCheckoutQuery')
+            this.bot.answerPreCheckoutQuery(query.id, true).then(() => {
+                console.log('success preCheckout')
+            }).catch(() => {
                 console.error("answerPreCheckoutQuery failed");
             });
         });
