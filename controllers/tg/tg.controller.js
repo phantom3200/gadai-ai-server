@@ -4,7 +4,7 @@ const tgBotService = require('../../service/tgbot.service')
 class TgController {
 
     async getInvoiceLink(req, res) {
-        let result = await tgBotService.buySubscription()
+        let result = await tgBotService.getInvoice()
         if (result) {
             res.json({success:true, data:result})
         }

@@ -25,10 +25,16 @@ class TgbotService {
             }*/
         });
 
+        this.bot.on("pre_checkout_query", (query) => {
+            this.bot.answerPreCheckoutQuery(query.id, true).catch(() => {
+                console.error("answerPreCheckoutQuery failed");
+            });
+        });
+
         console.log('bot Launched')
     }
 
-    async buySubscription() {
+    async getInvoice() {
         const title = "Some Title";
         const description = "Some Description";
         const payload = '123';
