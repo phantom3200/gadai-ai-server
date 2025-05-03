@@ -1,4 +1,4 @@
-const tgBotService = require('../../service/tgbot.service')
+const tgBotService = require('../service/tgbot.service')
 
 
 class TgController {
