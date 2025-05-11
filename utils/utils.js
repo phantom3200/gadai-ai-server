@@ -48,4 +48,20 @@ const getAIClient = () => {
     return client
 }
 
-module.exports = {getTgLink, validateInitTgData, initializeFirebase, getAIClient}
+const parsePayload = (payload) => {
+    if (!payload || !payload.includes('?')) {
+        return {};
+    }
+
+    const [, queryString] = payload.split('?');
+
+    const params = queryString.split('&').reduce((acc, param) => {
+        const [key, value] = param.split('=');
+        acc[key] = value;
+        return acc;
+    }, {});
+
+    return params;
+}
+
+module.exports = {getTgLink, validateInitTgData, initializeFirebase, getAIClient, parsePayload}
