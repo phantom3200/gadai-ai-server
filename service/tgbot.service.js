@@ -1,22 +1,26 @@
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
-const {getTgLink} = require('../utils/utils')
+const {getTgLink, parsePayload} = require('../utils/utils')
 require('dotenv').config()
 
 
 class TgbotService {
+    isTestMode = JSON.parse(process.env.IS_TEST_MODE)
     bot= null
     async tgbotInit () {
-        const isTgTestEnvironment = JSON.parse(process.env.USE_TG_TEST_ENV)
+        const isTgTestEnvironment = JSON.parse(process.env.USE_TG_TEST_ENV);
         this.bot = new TelegramBot(process.env.TG_TOKEN, { polling: true, testEnvironment: isTgTestEnvironment });
 
         this.bot.on('successful_payment', async (msg) => {
             const chatId = msg.chat.id;
-            this.bot.sendMessage(chatId, 'Вы получили Pro версию');
             const userID = msg.from.id;
             const paymentChargeID = msg.successful_payment.telegram_payment_charge_id;
-            console.log('successful_payment: ', msg.successful_payment);
-            console.log('payment_charge_id: ', paymentChargeID);
+            const payload = msg.successful_payment.invoice_payload;
+
+            const params = parsePayload(payload);
+            const predictionTitle = params.title
+
+            this.bot.sendMessage(chatId, `Вы получили ${predictionTitle}`);
            /* try {
                 const isRefunded = await this.refundStarPayment(userID, paymentChargeID);
                 console.log('is_refunded: ', isRefunded);
@@ -34,16 +38,27 @@ class TgbotService {
             });
         });
 
+        this.bot.on('message', async (msg) => {
+            const chatId = msg.chat.id;
+
+            if (msg.text === '/start') {
+                const welcomeMessage = `Добро пожаловать в Astroface! 🎉\n` +
+                    `Загрузи своё селфи / свою ладонь / фото кофейной гущи и получи индивидуальное предсказание на день от Искусственного Интеллекта.`;
+
+                await this.bot.sendMessage(chatId, welcomeMessage);
+            }
+        });
+
         console.log('bot Launched')
     }
 
-    async getInvoice() {
-        const title = "Some Title";
-        const description = "Some Description";
-        const payload = '123';
+    async getInvoice(title, price, count, id) {
+        const description = `Покупка ${title}`;
+        const payload = `prediction_purchase?date=${Date.now()}&id=${id}&quantity=${count}&title=${title}`;
         const provider_token = "";
         const currency = "XTR";
-        const prices = [{ label: "Price Label", amount: 1 }];
+        const amount = this.isTestMode ? 1 : price
+        const prices = [{ label: "Price Label", amount }];
 
         const result = await this.bot.createInvoiceLink(title, description, payload, provider_token, currency, prices);
         return result;

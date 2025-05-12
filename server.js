@@ -4,21 +4,22 @@ require('dotenv').config()
 const app = express()
 const port = process.env.PORT
 const tgbotService = require('./service/tgbot.service')
-const tgRouter = require('./routes/tg.router')
+const router = require('./routes/router')
+const {initializeFirebase} = require('./utils/utils')
 
-app.use(express.json());
-app.use(cors())
+app.use(express.json({limit: '5mb'}));
+app.use(cors());
 
 let start = async() => {
+    initializeFirebase();
     await tgbotService.tgbotInit()
 
     app.listen(port, () => {
-        console.log(port)
         console.log('server has been launched')
     })
 
-    app.use('/tg', tgRouter)
+    app.use('/', router)
 
 }
 
-start()
+start();
