@@ -4,10 +4,10 @@ class FirebaseController {
         const {body: {tgId, initData}} = req
         const {success, data} = await firebaseService.auth(initData, tgId)
         if (success) {
-            res.json({success:true, data:data})
+            res.json({success:true, data:data});
         }
         else {
-            res.json({success:false, message: `Can't create token: ${data}`})
+            res.json({success:false, message: `Can't create token: ${data}`});
         }
     }
 
