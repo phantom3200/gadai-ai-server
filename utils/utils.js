@@ -30,11 +30,9 @@ const validateInitTgData = (initData) => {
 }
 
 const initializeFirebase = () => {
-    const rootPath = path.dirname(require.main.filename)
-    const configPath = `${rootPath}/${process.env.FIREBASE_CONFIG}`
     if (!admin.apps.length) {
         admin.initializeApp({
-            credential: admin.credential.cert(configPath),
+            credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_CONFIG)),
         });
     }
     return admin.firestore();
