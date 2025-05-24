@@ -1,15 +1,13 @@
 const admin = require('firebase-admin');
 const axios = require('axios');
 require('dotenv').config();
-const {validateInitTgData, initializeFirebase} = require('../utils/utils')
+const { initializeFirebase } = require('../utils/utils')
 
 class FirebaseService {
     constructor() {
         this.db = initializeFirebase();
     }
     async auth (initData, tgId) {
-        const isTgDataValid = validateInitTgData(initData)
-        if (isTgDataValid) {
             const result = await admin.auth().createCustomToken(tgId)
                 .then(async (customToken) => {
                     const idToken = await this.getIdToken(customToken)
@@ -20,7 +18,6 @@ class FirebaseService {
                 });
             return result
         }
-    }
 
     async getIdToken (customToken) {
         const result = await axios.post(
