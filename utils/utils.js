@@ -1,7 +1,6 @@
 const admin = require('firebase-admin');
 const path = require('path');
 require('dotenv').config()
-const crypto = require('crypto');
 const { OpenAI } = require('openai');
 
 const getTgLink = (endpoint) => {
@@ -10,23 +9,6 @@ const getTgLink = (endpoint) => {
     const useTgTestEnv = JSON.parse(process.env.USE_TG_TEST_ENV)
     const link = useTgTestEnv ? `${testUrl}${endpoint}` : `${url}${endpoint}`
     return link
-}
-
-const validateInitTgData = (initData) => {
-    const urlSearchParams = new URLSearchParams(initData);
-    const data = Object.fromEntries(urlSearchParams.entries());
-    const checkString = Object.keys(data).filter(key => key !== 'hash' )
-        .map(key =>
-        `${key}=${data[key]}`)
-        .sort()
-        .join('\n');
-    const secretkey = crypto.createHmac( 'sha256', 'WebAppData')
-        .update(process.env.TG_TOKEN)
-        .digest();
-    const signature = crypto.createHmac('sha256', secretkey)
-        .update(checkString)
-        .digest( 'hex');
-    return data.hash === signature;
 }
 
 const initializeFirebase = () => {
@@ -62,4 +44,4 @@ const parsePayload = (payload) => {
     return params;
 }
 
-module.exports = {getTgLink, validateInitTgData, initializeFirebase, getAIClient, parsePayload}
+module.exports = {getTgLink, initializeFirebase, getAIClient, parsePayload}

@@ -2,6 +2,11 @@ const firebaseService = require('../service/firebase.service')
 class FirebaseController {
     async firebaseAuth(req, res) {
         const {body: {tgId, initData}} = req
+
+        if (!tgId || !initData) {
+            res.status(403).json({success:false, message: `Telegram data is not provided`})
+        }
+
         const {success, data} = await firebaseService.auth(initData, tgId)
         if (success) {
             res.json({success:true, data:data});
